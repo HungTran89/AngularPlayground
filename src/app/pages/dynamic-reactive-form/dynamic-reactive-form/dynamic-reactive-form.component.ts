@@ -12,7 +12,7 @@ interface formSchemaModel {
   label: string;
   type: string;
   default?: string;
-  validators: string[];
+  validators?: string[];
 }
 interface formSchemaGroup {
   name: string;
@@ -32,13 +32,9 @@ export class DynamicReactiveFormComponent implements OnInit {
   form!: FormGroup;
   formTitle: string = 'Default Form Name';
   subHeader: string = 'Add Your Customized Sub-Header Here';
-  groups: { name: string; controls: any[] }[] = [
-    {
-      name: 'Group 1',
-      controls: [{ nameLabel: '', controlType: '', defaultPlaceholder: '' }],
-    },
-  ];
-  formSchema = signal({});
+  controls: formSchemaModel[] = [];
+  groups: { name: string; controls: any[] }[] = [];
+  formSchema = signal<formSchemaModel[]>([]);
 
   fb = inject(FormBuilder);
 
@@ -76,31 +72,59 @@ export class DynamicReactiveFormComponent implements OnInit {
     });
   }
 
-  addControlInGroup(groupIndex: number) {
-    // console.log('clicking button')
-    // const obj: formSchemaModel = {
-    //     type: 'string',
-    //     label: 'First Name',
-    //     default: 'First Name',
-    //     validators: ['required', 'minLength(1)', 'maxLength(25)'],
-    //   };
+  addIndividuaControl() {
+    const obj: formSchemaModel = {
+      type: 'string',
+      label: 'First Name',
+      default: 'First Name',
+      validators: ['required', 'minLength(1)', 'maxLength(25)'],
+    };
+    // this.controls.push(obj);
+    this.formSchema.update((current) => [...current, obj]); // using signal
+  }
 
-    // this.formSchema.set({...this.formSchema, obj});
-    // debugger;
-    this.groups[groupIndex].controls.push({ nameLabel: '', controlType: '', defaultPlaceholder: '' });
+  addControlInGroup(groupIndex: number) {
+    this.groups[groupIndex].controls.push({
+      nameLabel: '',
+      controlType: '',
+      defaultPlaceholder: '',
+    });
   }
 
   deleteGroup(groupIndex: number) {
     this.groups.splice(groupIndex, 1);
   }
 
-  deleteControl(groupIndex: number, controlIndex: number) {
+  deleteControlInGroup(groupIndex: number, controlIndex: number) {
     this.groups[groupIndex].controls.splice(controlIndex, 1);
   }
 
-  addValidations(groupIndex: number, controlIndex: number) {
+  addValidationInGroup(groupIndex: number, controlIndex: number) {
     console.log(
       `Adding validations for Group ${groupIndex + 1}, Control ${
+        controlIndex + 1
+      }`
+    );
+    // In a real application, you would likely open a modal or navigate to the AddValidationComponent
+  }
+
+  deleteControl(controlIndex: number) {
+    console.log(
+      `Deleting control ${
+        controlIndex
+      }`
+    );
+    // this.controls.splice(controlIndex, 1);
+    this.formSchema.update((current) => {
+      // debugger;
+      const updated = [...current];
+      updated.splice(controlIndex, 1);
+      return updated;
+    });
+  }
+  addValidation(controlIndex: number) {
+    console.log(
+      `Adding validations for control ${
         controlIndex + 1
       }`
     );
