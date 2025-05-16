@@ -1,0 +1,32 @@
+<p>dummy-json works!</p>
+<h1>Products</h1>
+<div>
+  <input type="number" min="0" max="3000" [(ngModel)]="limitProduct">
+
+</div>
+@if(myResource.value()) {
+<table border="1px ">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Description</th>
+      <th>Price</th>
+      <th>Stock</th>
+      <th>Category</th>
+      <th>Brand</th>
+    </tr>
+  </thead>
+  <tbody>
+    @for (item of myResource.value(); track item.id) {
+    <tr>
+      <td>{{ item.title}}</td>
+      <td>{{ item.description}}</td>
+      <td>{{ item.price | currency:'USD'}}</td>
+      <td>{{ item.stock}}</td>
+      <td>{{ item.category}}</td>
+      <td>{{ item.brand}}</td>
+    </tr>
+    }
+  </tbody>
+</table>
+}

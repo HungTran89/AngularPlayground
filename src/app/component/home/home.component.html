@@ -1,0 +1,33 @@
+<h1>Home</h1>
+<main>
+  <a [routerLink]="[ '/dummyjson']">Dummy Json Store</a>
+  <button>Another Store</button>
+  <button>User</button>
+  <br /><br />
+  <div>
+    <label for="msgToChild">Message To Child</label>
+    <input type="text" id="msgToChild" [(ngModel)]="msgToChild" placeholder="Enter your name" />
+    <br /><br/>
+    <label for="homeMsg">Two-way Binding</label>
+    <input type="text" id="homeMsg" placeholder="enter your message" [(ngModel)]="homeMsg" />
+    {{homeMsg}}
+    
+    <br/><br/>
+    {{fromChild}}
+  </div>
+  @defer () {
+
+    <div>
+      <app-child-one name="{{msgToChild}}" (msgToParent)="receiveMessage($event)"></app-child-one>
+    </div>
+  }
+  @loading {
+    <div>Loading...</div>
+  }
+  @placeholder {
+    <div>Placeholder...</div>
+  }
+  @error {
+    <div>Error...</div>
+  }
+</main>
