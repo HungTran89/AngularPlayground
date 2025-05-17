@@ -1,5 +1,5 @@
 <div class="p-4 border rounded-md shadow-md">
-    <h2 class="text-xl font-semibold mb-4">Component 1</h2>
+    <h2 class="text-xl font-semibold mb-4">Dynamic Reactive Form Creation Tool</h2>
 
     <div class="mb-4">
         <button class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mr-2 cursor-pointer"
@@ -12,120 +12,163 @@
         </button>
     </div>
 
-    @for(c of formSchema(); track idx; let idx = $index) {
-        <div class="flex items-center mb-2">
-             <label for="nameLabel_{{idx}}" class="mr-2 font-semibold">Name/Label</label>
-        <input type="text" id="nameLabel_{{idx}}"
-            class="shadow appearance-none border rounded w-1/4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            [(ngModel)]="c.label">
-
-        <label for="controlType_{{idx}}" class="ml-4 mr-2 font-semibold">Control Type</label>
-        <select id="controlType_{{idx}}"
-            class="shadow appearance-none border rounded w-1/4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            [(ngModel)]="c.type">
-            <option value="" disabled selected>Select Type</option>
-            <option value="text">Text</option>
-            <option value="number">Number</option>
-            <option value="dropdown">Dropdown</option>
-        </select>
-
-        <label for="defaultPlaceholder_{{idx}}" class="ml-4 mr-2 font-semibold">Default/Placeholder</label>
-        <input type="text" id="defaultPlaceholder_{{idx}}"
-            class="shadow appearance-none border rounded w-1/4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            [(ngModel)]="c.default">
-
-        <button class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded ml-4 cursor-pointer"
-            (click)="addValidation(idx)">
-            Add Validations
-        </button>
-        <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded ml-2 cursor-pointer"
-            (click)="deleteControl(idx)">
-            Delete Control
-        </button>
-        </div>
-    }
-
-    <div *ngFor="let group of groups; let i = index" class="mb-6 border border-red-500 rounded-md p-4">
-        <div class="flex items-center mb-2">
-            <label for="groupName_{{i}}" class="mr-2 font-semibold">Group Name</label>
-            <input type="text" id="groupName_{{i}}"
-                class="shadow appearance-none border rounded w-auto py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                [(ngModel)]="group.name">
-            <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded ml-2 cursor-pointer"
-                (click)="deleteGroup(i)">
-                Delete Group
-            </button>
+    <!--BEGIN Individual Control-->
+    @for(c of formSchema(); track idx; let idx = $index)
+    {
+    <div class="grid grid-cols-5 gap-4 items-end mb-4">
+        <div>
+            <label for="nameLabel_{{idx}}" class="block text-xs font-medium text-gray-500 mb-1">Name/Label</label>
+            <input type="text" id="nameLabel_{{idx}}"
+                class="block w-full rounded-md bg-white px-3.5 py-2 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
+                [(ngModel)]="c.label">
         </div>
 
-        <div *ngFor="let control of group.controls; let j = index" class="flex items-center mb-2">
-            <label for="nameLabel_{{i}}_{{j}}" class="mr-2 font-semibold">Name/Label</label>
-            <input type="text" id="nameLabel_{{i}}_{{j}}"
-                class="shadow appearance-none border rounded w-1/4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                [(ngModel)]="control.nameLabel">
-
-            <label for="controlType_{{i}}_{{j}}" class="ml-4 mr-2 font-semibold">Control Type</label>
-            <select id="controlType_{{i}}_{{j}}"
-                class="shadow appearance-none border rounded w-1/4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                [(ngModel)]="control.controlType">
+        <div>
+            <label for="controlType_{{idx}}" class="block text-xs font-medium text-gray-500 mb-1">Control Type</label>
+            <select id="controlType_{{idx}}"
+                class="block w-full rounded-md bg-white px-3.5 py-2 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
+                [(ngModel)]="c.type">
                 <option value="" disabled selected>Select Type</option>
                 <option value="text">Text</option>
                 <option value="number">Number</option>
                 <option value="dropdown">Dropdown</option>
             </select>
-
-            <label for="defaultPlaceholder_{{i}}_{{j}}" class="ml-4 mr-2 font-semibold">Default/Placeholder</label>
-            <input type="text" id="defaultPlaceholder_{{i}}_{{j}}"
-                class="shadow appearance-none border rounded w-1/4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                [(ngModel)]="control.defaultPlaceholder">
-
-            <button class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded ml-4 cursor-pointer"
-                (click)="addValidationInGroup(i, j)">
+        </div>
+        <div>
+            <label for="defaultPlaceholder_{{idx}}" class="block text-xs font-medium text-gray-500 mb-1">Default</label>
+            <input type="text" id="defaultPlaceholder_{{idx}}"
+                class="block w-full rounded-md bg-white px-3.5 py-2 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
+                [(ngModel)]="c.default">
+        </div>
+        <div>
+            <button
+                class="w-full bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded ml-4 cursor-pointer"
+                (click)="addValidation(idx)">
                 Add Validations
             </button>
-            <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded ml-2 cursor-pointer"
-                (click)="deleteControlInGroup(i, j)">
+
+        </div>
+        <div>
+
+            <button
+                class="w-full bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded ml-2 cursor-pointer"
+                (click)="deleteControl(idx)">
                 Delete Control
             </button>
         </div>
-        <button class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mt-2 cursor-pointer"
-            (click)="addControlInGroup(i)">
-            Add Control
-        </button>
     </div>
+    }
+    <!--END Individual Control-->
+
+    <!--BEGIN Form Group-->
+    <div *ngFor="let group of groups; let i = index" class="mb-6 border border-red-500 rounded-md p-4">
+        <div class="flex  items-end mb-4">
+            <div>
+                <label for="groupName_{{i}}" class="block text-xs font-medium text-gray-500 mb-1">Group Name</label>
+                <input type="text" id="groupName_{{i}}"
+                    class="w-full rounded-md bg-white px-3.5 py-2 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
+                    [(ngModel)]="group.name">
+            </div>
+
+            <div>
+                <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded ml-2 cursor-pointer"
+                    (click)="deleteGroup(i)">
+                    Delete Group
+                </button>
+            </div>
+        </div>
+
+        <div *ngFor="let control of group.controls; let j = index" class="grid grid-cols-5 gap-4 items-end mb-4">
+            <div>
+                <label for="nameLabel_{{i}}_{{j}}"
+                    class="block text-xs font-medium text-gray-500 mb-1">Name/Label</label>
+                <input type="text" id="nameLabel_{{i}}_{{j}}"
+                    class="w-full rounded-md bg-white px-3.5 py-2 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
+                    [(ngModel)]="control.nameLabel">
+            </div>
+            <div>
+                <label for="controlType_{{i}}_{{j}}" class="block text-xs font-medium text-gray-500 mb-1">Control
+                    Type</label>
+                <select id="controlType_{{i}}_{{j}}"
+                    class="w-full rounded-md bg-white px-3.5 py-2 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
+                    [(ngModel)]="control.controlType">
+                    <option value="" disabled selected>Select Type</option>
+                    <option value="text">Text</option>
+                    <option value="number">Number</option>
+                    <option value="dropdown">Dropdown</option>
+                </select>
+            </div>
+            <div>
+                <label for="defaultPlaceholder_{{i}}_{{j}}"
+                    class="block text-xs font-medium text-gray-500 mb-1">Default/Placeholder</label>
+                <input type="text" id="defaultPlaceholder_{{i}}_{{j}}"
+                    class="w-full rounded-md bg-white px-3.5 py-2 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
+                    [(ngModel)]="control.defaultPlaceholder">
+            </div>
+            <div>
+                <button
+                    class="w-full bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded ml-4 cursor-pointer"
+                    (click)="addValidationInGroup(i, j)">
+                    Add Validations
+                </button>
+            </div>
+            <div>
+                <button
+                    class="w-full bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded ml-2 cursor-pointer"
+                    (click)="deleteControlInGroup(i, j)">
+                    Delete Control
+                </button>
+            </div>
+        </div>
+        <div>
+            <button class=" bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded cursor-pointer"
+                (click)="addControlInGroup(i)">
+                Add Control
+            </button>
+        </div>
+    </div>
+    <!--END Form Group-->
 </div>
 <br /><br /><br />
 
+<!--BEGIN Dynamic Form Preview-->
 <div class="isolate bg-white px-6 py-24 sm:py-32 lg:px-8">
-
     <div class="mx-auto max-w-2xl text-center">
         <h2 class="text-4xl font-semibold tracking-tight text-balance text-gray-900 sm:text-5xl">{{formTitle}}</h2>
         <p class="mt-2 text-lg/8 text-gray-600">{{subHeader}}</p>
     </div>
     <form [formGroup]="form" class="mx-auto mt-16 max-w-xl sm:mt-20">
-        <div class="grid grid-cols-1 gap-x-8 gap-y-6 sm:grid-cols-2">
+        <div class="grid gap-x-8 gap-y-6 sm:grid-cols-2">
             @for (key of getControls(form); track key) {
             <ng-container [formGroup]="form">
                 @if (isFormGroup(form.get(key))) {
                 <fieldset [formGroupName]="key">
-                    <div class="block text-sm/6 font-semibold text-gray-900">{{ key }}</div>
+                    <div class="block text-md/6 font-semibold text-gray-900">{{ key }}</div>
                     @for (childKey of getControls(form.get(key)); track childKey) {
                     <ng-container>
-
-                        <label for="first-name" class="block text-sm/6 font-semibold text-gray-900">{{ childKey
-                            }}</label>
-                        <input [formControlName]="childKey"
-                            class="block w-full rounded-md bg-white px-3.5 py-2 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600" />
+                        <div class="mb-4">
+                            <label for="input-{{key}}-{{childKey}}"
+                                class="block text-xs font-medium text-gray-500 mb-1">
+                                {{ childKey }}
+                            </label>
+                            <input [formControlName]="childKey" id="input-{{key}}-{{childKey}}"
+                                class="block w-full rounded-md bg-white px-3.5 py-2 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600" />
+                        </div>
                     </ng-container>
-
                     }
                 </fieldset>
                 } @else {
-                <label for="{{key}}" class="block text-sm/6 font-semibold text-gray-900">{{ key }}</label>
-                <input [formControlName]="key"
-                    class="block w-full rounded-md bg-white px-3.5 py-2 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600" />
+                <div class="mb-4">
+                    <label for="input-{{key}}" class="block text-xs font-medium text-gray-500 mb-1">
+                        {{ key }}
+                    </label>
+                    <input [formControlName]="key" id="input-{{key}}"
+                        class="block w-full rounded-md bg-white px-3.5 py-2 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600" />
+                </div>
                 }
             </ng-container>
             }
         </div>
     </form>
 </div>
+<!--BEGIN Dynamic Form Preview-->
