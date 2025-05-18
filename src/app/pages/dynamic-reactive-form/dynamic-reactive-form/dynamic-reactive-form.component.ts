@@ -8,15 +8,27 @@ import {
 } from '@angular/forms';
 import { ReactiveForm1, ReactiveForm2 } from '../../../models/reactiveForm1.js';
 
-interface formSchemaModel {
+interface formControlModel {
+  controlId: number;
   label: string;
   type: string;
   default?: string;
-  validators?: string[];
+  validators: string[];
+  order: number;
 }
-interface formSchemaGroup {
+interface formGroupModel {
+  groupId: number;
   name: string;
-  formSchemaMode: formSchemaModel;
+  controls: formControlModel[];
+  order: number;
+}
+
+interface formSchemaModel {
+  formID: number;
+  formName: string;
+  description?: string;
+  controls: formControlModel[];
+  groups: formGroupModel[];
 }
 
 @Component({
@@ -32,16 +44,23 @@ export class DynamicReactiveFormComponent implements OnInit {
   form!: FormGroup;
   formTitle: string = 'Default Form Name';
   subHeader: string = 'Add Your Customized Sub-Header Here';
-  controls: formSchemaModel[] = [];
-  groups: { name: string; controls: any[] }[] = [];
-  formSchema = signal<formSchemaModel[]>([]);
+  formSchema = signal<formSchemaModel>({
+    formID: 0,
+    formName: '',
+    description: undefined,
+    controls: [],
+    groups: []
+  });
+
+
 
   fb = inject(FormBuilder);
 
   ngOnInit() {
-    this.form = this.buildForm(ReactiveForm1);
+    //this.form = this.buildForm(ReactiveForm1);
   }
 
+  // TO-DO: move to a different component. This component will be responsible for creating the form based on the form schema
   private buildForm(formSchema: any): FormGroup {
     const group: any = {};
 
@@ -66,66 +85,101 @@ export class DynamicReactiveFormComponent implements OnInit {
   }
 
   addGroup() {
-    this.groups.push({
-      name: `Group ${this.groups.length + 1}`,
-      controls: [{ nameLabel: '', controlType: '', defaultPlaceholder: '' }],
-    });
+    const last = this.formSchema().groups[this.formSchema().groups.length - 1]?.groupId || 0;
+    const newGroup: formGroupModel = {
+      groupId: last + 1,
+      name: `Group ${last + 1}`,
+      controls: [{ controlId: 1, label: 'ctrl: 1', type: '', default: '', validators: [], order: 0 }],
+      order: 0
+    };
+
+    this.formSchema.update((current) => ({
+      ...current,
+      groups: [...current.groups, newGroup]
+    }));
+
+    console.info('form schema 2', this.formSchema())
   }
 
-  addIndividuaControl() {
-    const obj: formSchemaModel = {
-      type: 'string',
-      label: 'First Name',
-      default: 'First Name',
-      validators: ['required', 'minLength(1)', 'maxLength(25)'],
-    };
-    // this.controls.push(obj);
-    this.formSchema.update((current) => [...current, obj]); // using signal
+  deleteGroup(groupId: number) {
+    console.log('Group ID: ', groupId)
+    this.formSchema.update(current => ({
+      ...current,
+      groups: current.groups.filter(g => g.groupId != groupId)
+    }))
   }
 
   addControlInGroup(groupIndex: number) {
-    this.groups[groupIndex].controls.push({
-      nameLabel: '',
-      controlType: '',
-      defaultPlaceholder: '',
-    });
+    const currentGroup = this.formSchema().groups[groupIndex]
+    const lastCtrl = currentGroup.controls[currentGroup.controls.length -1]?.controlId || 0;
+    const control: formControlModel = {
+      controlId: lastCtrl + 1,
+      label: `ctrl: ${lastCtrl + 1}`,
+      type: '',
+      default: '',
+      validators: [],
+      order: 0
+    }
+    currentGroup.controls.push(control);
   }
 
-  deleteGroup(groupIndex: number) {
-    this.groups.splice(groupIndex, 1);
-  }
+  deleteControlInGroup(groupIndex: number, controlId: number) {
+    const currentGroup = this.formSchema().groups[groupIndex];
+    currentGroup.controls = currentGroup.controls.filter(f => f.controlId != controlId);
 
-  deleteControlInGroup(groupIndex: number, controlIndex: number) {
-    this.groups[groupIndex].controls.splice(controlIndex, 1);
+    // updating using signal
+    // this.formSchema.update(current => ({
+    //   ...current,
+    //   groups: current.groups.map((g, idx) =>
+    //   idx === groupIndex
+    //     ? { ...g, controls: g.controls.filter(f => f.controlId != controlId) }
+    //     : g
+    //   )
+    // }))
   }
 
   addValidationInGroup(groupIndex: number, controlIndex: number) {
     console.log(
-      `Adding validations for Group ${groupIndex + 1}, Control ${
-        controlIndex + 1
+      `Adding validations for Group ${groupIndex + 1}, Control ${controlIndex + 1
       }`
     );
     // In a real application, you would likely open a modal or navigate to the AddValidationComponent
   }
 
-  deleteControl(controlIndex: number) {
-    console.log(
-      `Deleting control ${
-        controlIndex
-      }`
-    );
-    // this.controls.splice(controlIndex, 1);
-    this.formSchema.update((current) => {
-      // debugger;
-      const updated = [...current];
-      updated.splice(controlIndex, 1);
-      return updated;
-    });
+  addIndividualControl() {
+    const lastCtrl = this.formSchema().controls[this.formSchema().controls.length -1]?.controlId || 0;
+    const ctrl: formControlModel = {
+      controlId: lastCtrl + 1,
+      type: '',
+      label: `Control: ${lastCtrl + 1}`,
+      default: '',
+      validators: [],//['required', 'minLength(1)', 'maxLength(25)'],
+      order: 0
+    };
+    // this.controls.push(obj);
+    this.formSchema.update(current => ({
+      ...current,
+      controls: [...current.controls, ctrl]
+    }));
+
+    console.info('form schema 2', this.formSchema())
   }
-  addValidation(controlIndex: number) {
+
+
+  deleteIndividualControl(controlId: number) {
     console.log(
-      `Adding validations for control ${
-        controlIndex + 1
+      `Deleting control ${controlId}`
+    );
+
+    // using signal
+    this.formSchema.update(current => ({
+      ...current,
+      controls: current.controls.filter(f => f.controlId != controlId)
+    }));
+  }
+  addIndividualControlValidation(controlIndex: number) {
+    console.log(
+      `Adding validations for control ${controlIndex + 1
       }`
     );
     // In a real application, you would likely open a modal or navigate to the AddValidationComponent

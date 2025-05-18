@@ -1,5 +1,19 @@
 <div class="p-4 border rounded-md shadow-md">
     <h2 class="text-xl font-semibold mb-4">Dynamic Reactive Form Creation Tool</h2>
+    <div class="flex mb-4">
+        <div>
+            <label for="formName" class="block text-xs font-medium text-gray-500 mb-1">Form Name (max: 25 characters)</label>
+            <input type="text" maxlength="25"
+                class="block w-full rounded-md bg-white px-3.5 py-2 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
+                [(ngModel)]="this.formSchema().formName">
+        </div>
+        <div class=" ml-3 grow">
+            <label for="formDescription" class="block text-xs font-medium text-gray-500 mb-1">Form Description (max: 100 characters)</label>
+            <input type="textarea" maxlength="100"
+                class="block w-full rounded-md bg-white px-3.5 py-2 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
+                [(ngModel)]="this.formSchema().description">
+        </div>
+    </div>
 
     <div class="mb-4">
         <button class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mr-2 cursor-pointer"
@@ -7,13 +21,13 @@
             Add New Group
         </button>
         <button class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded cursor-pointer"
-            (click)="addIndividuaControl()">
+            (click)="addIndividualControl()">
             Add New Control
         </button>
     </div>
 
     <!--BEGIN Individual Control-->
-    @for(c of formSchema(); track idx; let idx = $index)
+    @for(c of formSchema().controls; track idx; let idx = $index)
     {
     <div class="grid grid-cols-5 gap-4 items-end mb-4">
         <div>
@@ -43,7 +57,7 @@
         <div>
             <button
                 class="w-full bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded ml-4 cursor-pointer"
-                (click)="addValidation(idx)">
+                (click)="addIndividualControlValidation(idx)">
                 Add Validations
             </button>
 
@@ -52,7 +66,7 @@
 
             <button
                 class="w-full bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded ml-2 cursor-pointer"
-                (click)="deleteControl(idx)">
+                (click)="deleteIndividualControl(c.controlId)">
                 Delete Control
             </button>
         </div>
@@ -61,7 +75,7 @@
     <!--END Individual Control-->
 
     <!--BEGIN Form Group-->
-    <div *ngFor="let group of groups; let i = index" class="mb-6 border border-red-500 rounded-md p-4">
+    <div *ngFor="let group of formSchema().groups; let i = index" class="mb-6 border border-red-500 rounded-md p-4">
         <div class="flex  items-end mb-4">
             <div>
                 <label for="groupName_{{i}}" class="block text-xs font-medium text-gray-500 mb-1">Group Name</label>
@@ -72,7 +86,7 @@
 
             <div>
                 <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded ml-2 cursor-pointer"
-                    (click)="deleteGroup(i)">
+                    (click)="deleteGroup(group.groupId)">
                     Delete Group
                 </button>
             </div>
@@ -84,14 +98,14 @@
                     class="block text-xs font-medium text-gray-500 mb-1">Name/Label</label>
                 <input type="text" id="nameLabel_{{i}}_{{j}}"
                     class="w-full rounded-md bg-white px-3.5 py-2 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
-                    [(ngModel)]="control.nameLabel">
+                    [(ngModel)]="control.label">
             </div>
             <div>
                 <label for="controlType_{{i}}_{{j}}" class="block text-xs font-medium text-gray-500 mb-1">Control
                     Type</label>
                 <select id="controlType_{{i}}_{{j}}"
                     class="w-full rounded-md bg-white px-3.5 py-2 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
-                    [(ngModel)]="control.controlType">
+                    [(ngModel)]="control.type">
                     <option value="" disabled selected>Select Type</option>
                     <option value="text">Text</option>
                     <option value="number">Number</option>
@@ -103,7 +117,7 @@
                     class="block text-xs font-medium text-gray-500 mb-1">Default/Placeholder</label>
                 <input type="text" id="defaultPlaceholder_{{i}}_{{j}}"
                     class="w-full rounded-md bg-white px-3.5 py-2 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
-                    [(ngModel)]="control.defaultPlaceholder">
+                    [(ngModel)]="control.default">
             </div>
             <div>
                 <button
@@ -115,7 +129,7 @@
             <div>
                 <button
                     class="w-full bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded ml-2 cursor-pointer"
-                    (click)="deleteControlInGroup(i, j)">
+                    (click)="deleteControlInGroup(i, control.controlId)">
                     Delete Control
                 </button>
             </div>
@@ -132,7 +146,7 @@
 <br /><br /><br />
 
 <!--BEGIN Dynamic Form Preview-->
-<div class="isolate bg-white px-6 py-24 sm:py-32 lg:px-8">
+<!-- <div class="isolate bg-white px-6 py-24 sm:py-32 lg:px-8">
     <div class="mx-auto max-w-2xl text-center">
         <h2 class="text-4xl font-semibold tracking-tight text-balance text-gray-900 sm:text-5xl">{{formTitle}}</h2>
         <p class="mt-2 text-lg/8 text-gray-600">{{subHeader}}</p>
@@ -170,5 +184,5 @@
             }
         </div>
     </form>
-</div>
+</div> -->
 <!--BEGIN Dynamic Form Preview-->
