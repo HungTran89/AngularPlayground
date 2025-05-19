@@ -7,6 +7,7 @@ import {
   ReactiveFormsModule,
 } from '@angular/forms';
 import { ReactiveForm1, ReactiveForm2 } from '../../../models/reactiveForm1.js';
+import { stringify } from 'node:querystring';
 
 interface formControlModel {
   controlId: number;
@@ -24,7 +25,7 @@ interface formGroupModel {
 }
 
 interface formSchemaModel {
-  formID: number;
+  formID: string;
   formName: string;
   description?: string;
   controls: formControlModel[];
@@ -45,7 +46,7 @@ export class DynamicReactiveFormComponent implements OnInit {
   formTitle: string = 'Default Form Name';
   subHeader: string = 'Add Your Customized Sub-Header Here';
   formSchema = signal<formSchemaModel>({
-    formID: 0,
+    formID: crypto.randomUUID(),
     formName: '',
     description: undefined,
     controls: [],
@@ -57,7 +58,7 @@ export class DynamicReactiveFormComponent implements OnInit {
   fb = inject(FormBuilder);
 
   ngOnInit() {
-    //this.form = this.buildForm(ReactiveForm1);
+    this.form = this.buildForm(this?.formSchema());
   }
 
   // TO-DO: move to a different component. This component will be responsible for creating the form based on the form schema
@@ -98,7 +99,6 @@ export class DynamicReactiveFormComponent implements OnInit {
       groups: [...current.groups, newGroup]
     }));
 
-    console.info('form schema 2', this.formSchema())
   }
 
   deleteGroup(groupId: number) {
@@ -107,6 +107,7 @@ export class DynamicReactiveFormComponent implements OnInit {
       ...current,
       groups: current.groups.filter(g => g.groupId != groupId)
     }))
+    
   }
 
   addControlInGroup(groupIndex: number) {
@@ -121,11 +122,17 @@ export class DynamicReactiveFormComponent implements OnInit {
       order: 0
     }
     currentGroup.controls.push(control);
+    
   }
 
   deleteControlInGroup(groupIndex: number, controlId: number) {
     const currentGroup = this.formSchema().groups[groupIndex];
     currentGroup.controls = currentGroup.controls.filter(f => f.controlId != controlId);
+
+    // cannot have a group with no control
+    if(currentGroup.controls.length === 0) {
+      this.addControlInGroup(groupIndex)
+    }
 
     // updating using signal
     // this.formSchema.update(current => ({
@@ -161,11 +168,7 @@ export class DynamicReactiveFormComponent implements OnInit {
       ...current,
       controls: [...current.controls, ctrl]
     }));
-
-    console.info('form schema 2', this.formSchema())
   }
-
-
   deleteIndividualControl(controlId: number) {
     console.log(
       `Deleting control ${controlId}`
@@ -177,11 +180,21 @@ export class DynamicReactiveFormComponent implements OnInit {
       controls: current.controls.filter(f => f.controlId != controlId)
     }));
   }
+
   addIndividualControlValidation(controlIndex: number) {
     console.log(
       `Adding validations for control ${controlIndex + 1
       }`
     );
     // In a real application, you would likely open a modal or navigate to the AddValidationComponent
+  }
+
+  generateForm(): void {
+    if(!this.formSchema().formName) { alert("A Form Name Is Required"); return; }
+    if(this.formSchema().controls.length === 0 && this.formSchema().groups.length === 0) { alert("The Form Is Not Valid: Missing controls and/or groups"); return; }
+
+    
+    console.log('generating form: ', this.formSchema())
+    this.form = this.buildForm(this?.formSchema());
   }
 }
