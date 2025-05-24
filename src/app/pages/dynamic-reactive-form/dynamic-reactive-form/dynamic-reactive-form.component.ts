@@ -6,31 +6,7 @@ import {
   FormsModule,
   ReactiveFormsModule,
 } from '@angular/forms';
-import { ReactiveForm1, ReactiveForm2 } from '../../../models/reactiveForm1.js';
-import { stringify } from 'node:querystring';
-
-interface formControlModel {
-  controlId: number;
-  label: string;
-  type: string;
-  default?: string;
-  validators: string[];
-  order: number;
-}
-interface formGroupModel {
-  groupId: number;
-  name: string;
-  controls: formControlModel[];
-  order: number;
-}
-
-interface formSchemaModel {
-  formID: string;
-  formName: string;
-  description?: string;
-  controls: formControlModel[];
-  groups: formGroupModel[];
-}
+import { formControlModel, formControlType, formGroupModel, formSchemaModel, ReactiveForm1, ReactiveForm2 } from '../../../models/reactiveForm1.js';
 
 @Component({
   selector: 'app-dynamic-reactive-form',
@@ -45,13 +21,8 @@ export class DynamicReactiveFormComponent implements OnInit {
   form!: FormGroup;
   formTitle: string = 'Default Form Name';
   subHeader: string = 'Add Your Customized Sub-Header Here';
-  formSchema = signal<formSchemaModel>({
-    formID: crypto.randomUUID(),
-    formName: '',
-    description: undefined,
-    controls: [],
-    groups: []
-  });
+  formSchema = signal<formSchemaModel>({ formID: crypto.randomUUID(), formName: '', formFields: []});
+  formControlType = formControlType; // Make the enum available in the template
 
 
 
@@ -86,63 +57,58 @@ export class DynamicReactiveFormComponent implements OnInit {
   }
 
   addGroup() {
-    const last = this.formSchema().groups[this.formSchema().groups.length - 1]?.groupId || 0;
+    const last = this.formSchema().formFields[this.formSchema().formFields.length - 1]?.order || 0;
     const newGroup: formGroupModel = {
       groupId: last + 1,
       name: `Group ${last + 1}`,
-      controls: [{ controlId: 1, label: 'ctrl: 1', type: '', default: '', validators: [], order: 0 }],
-      order: 0
+      controls: [{ controlId: 1, label: 'ctrl: 1', type: formControlType.string, default: '', validators: [], order: 0 }],
+      order: last+1
     };
 
     this.formSchema.update((current) => ({
       ...current,
-      groups: [...current.groups, newGroup]
+      formFields: [...current.formFields, newGroup]
     }));
-
   }
 
   deleteGroup(groupId: number) {
-    console.log('Group ID: ', groupId)
     this.formSchema.update(current => ({
       ...current,
-      groups: current.groups.filter(g => g.groupId != groupId)
+      formFields: current.formFields.filter(g => this.isFormGroup2(g) ? g.groupId != groupId : true)
     }))
     
   }
 
-  addControlInGroup(groupIndex: number) {
-    const currentGroup = this.formSchema().groups[groupIndex]
+  addControlInGroup(groupId: number) {
+    const currentGroup = this.formSchema().formFields.find(g => this.isFormGroup2(g) && g.groupId === groupId ) as  formGroupModel;
     const lastCtrl = currentGroup.controls[currentGroup.controls.length -1]?.controlId || 0;
     const control: formControlModel = {
       controlId: lastCtrl + 1,
       label: `ctrl: ${lastCtrl + 1}`,
-      type: '',
+      type: formControlType.string,
       default: '',
       validators: [],
-      order: 0
+      order: lastCtrl + 1
     }
     currentGroup.controls.push(control);
     
   }
 
-  deleteControlInGroup(groupIndex: number, controlId: number) {
-    const currentGroup = this.formSchema().groups[groupIndex];
-    currentGroup.controls = currentGroup.controls.filter(f => f.controlId != controlId);
-
-    // cannot have a group with no control
-    if(currentGroup.controls.length === 0) {
-      this.addControlInGroup(groupIndex)
+  deleteControlInGroup(groupId: number, controlId: number) {
+    const currentGroup = this.formSchema().formFields.find(g => this.isFormGroup2(g) && g.groupId === groupId ) as formGroupModel; 
+    if(currentGroup.controls.length === 1) {
+      // A group must have at minimum one controller
+      return; 
     }
-
     // updating using signal
-    // this.formSchema.update(current => ({
-    //   ...current,
-    //   groups: current.groups.map((g, idx) =>
-    //   idx === groupIndex
-    //     ? { ...g, controls: g.controls.filter(f => f.controlId != controlId) }
-    //     : g
-    //   )
-    // }))
+    this.formSchema.update(current => ({
+      ...current,
+      formFields: current.formFields.map((g, idx) =>
+      this.isFormGroup2(g) && g.groupId === groupId
+        ? { ...g, controls: g.controls.filter(f => f.controlId != controlId) }
+        : g
+      )
+    }))
   }
 
   addValidationInGroup(groupIndex: number, controlIndex: number) {
@@ -154,30 +120,28 @@ export class DynamicReactiveFormComponent implements OnInit {
   }
 
   addIndividualControl() {
-    const lastCtrl = this.formSchema().controls[this.formSchema().controls.length -1]?.controlId || 0;
+    const lastCtrl = this.formSchema().formFields[this.formSchema().formFields.length -1]?.order || 0;
     const ctrl: formControlModel = {
       controlId: lastCtrl + 1,
-      type: '',
+      type: formControlType.string,
       label: `Control: ${lastCtrl + 1}`,
       default: '',
       validators: [],//['required', 'minLength(1)', 'maxLength(25)'],
-      order: 0
+      order: lastCtrl+1
     };
     // this.controls.push(obj);
     this.formSchema.update(current => ({
       ...current,
-      controls: [...current.controls, ctrl]
+      formFields: [...current.formFields, ctrl]
     }));
+    
+    console.log('Adding Control: ', this.formSchema().formFields)
   }
-  deleteIndividualControl(controlId: number) {
-    console.log(
-      `Deleting control ${controlId}`
-    );
 
-    // using signal
+  deleteIndividualControl(controlId: number) {
     this.formSchema.update(current => ({
       ...current,
-      controls: current.controls.filter(f => f.controlId != controlId)
+      formFields: current.formFields.filter(f => this.isFormControl(f) ? f.controlId != controlId : true)
     }));
   }
 
@@ -191,10 +155,21 @@ export class DynamicReactiveFormComponent implements OnInit {
 
   generateForm(): void {
     if(!this.formSchema().formName) { alert("A Form Name Is Required"); return; }
-    if(this.formSchema().controls.length === 0 && this.formSchema().groups.length === 0) { alert("The Form Is Not Valid: Missing controls and/or groups"); return; }
+    if(this.formSchema().formFields.length === 0) { alert("The Form Is Not Valid: Missing controls and/or groups"); return; }
 
     
     console.log('generating form: ', this.formSchema())
-    this.form = this.buildForm(this?.formSchema());
+    this.form = this.buildForm(this.formSchema().formFields);
   }
+
+   // Helper function with a type predicate for formControlModel
+  isFormControl(field: formControlModel | formGroupModel): field is formControlModel {
+    return (field as formControlModel).controlId !== undefined;
+  }
+
+  // Helper function with a type predicate for formGroupModel
+  isFormGroup2(field: formControlModel | formGroupModel): field is formGroupModel {
+    return (field as formGroupModel).groupId !== undefined;
+  }
+
 }
