@@ -13,38 +13,128 @@ export const ReactiveForm1 = {
     Postal_Code: ""
   }
 };
+// Define formControlType enum if not already defined
+export enum formControlType {
+  string = 'string',
+  number = 'number',
+  boolean = 'boolean'
+}
 
+// Define formControlModel interface
+export interface formControlModel {
+  controlId: number;
+  type: formControlType;
+  label: string;
+  default?: any;
+  validators: string[];
+  order: number;
+}
 
-export  const ReactiveForm2 = {
-  First_Name: {
-    type: "string",
-    label: "First Name",
-    default: "First Name",
-    validators: ["required", "minLength(1)", "maxLength(25)"],
-  },
-  Last_Name: {
-    type: "string",
-    label: "Last Name",
-    placeholder: "First Name",
-    validators: ["required", "minLength(25)", "maxLength(25)"],
-  },
-  Age: {
-    type: "number",
-    label: "Age",
-    default: "minLength", // whatever minLength is set to  or zero
-    validators: ["required", "min(1)", "max(100)"],
-  },
-  Is_Active: {
-    type: "boolean",
-    label: "Is Active",
-    default: "F|T|NULL",  // the user can set the default value to True, False, or NULL 
-    validators: ["required", "minLength(1)", "maxLength(25)"],
-  },
-  Address: {
-    label: "Address",
-    children: {
-      Address1: { type: "text", label: "Address Line 1", value: "" },
-      Postal_Code: { type: "text", label: "Postal Code", value: "" },
+// Define formGroupModel interface
+export interface formGroupModel {
+  groupId: number;
+  name: string;
+  controls: formControlModel[];
+  order: number;
+}
+
+export interface formSchemaModel {
+  formID: string;
+  formName: string;
+  description?: string;
+  formFields: Array<formControlModel | formGroupModel>;
+}
+
+export const ReactiveForm2: formSchemaModel = {
+  formID: crypto.randomUUID(),
+  formName: 'Random Form',
+  description: 'This is a super duper random form',
+  formFields: [
+    {
+      controlId: 1,
+      type: formControlType.string,
+      label: "First Name",
+      default: "First Name",
+      validators: ["required", "minLength(1)", "maxLength(25)"],
+      order: 1
     },
-  },
+    {
+      controlId: 2,
+      type: formControlType.string,
+      label: "Last Name",
+      default: "Last Name",
+      validators: ["required", "minLength(1)", "maxLength(25)"],
+      order: 2
+    },
+    {
+      controlId: 3,
+      type: formControlType.string,
+      label: "Email",
+      default: "",
+      validators: ["required", "email"],
+      order: 3
+    },
+    {
+      controlId: 4,
+      type: formControlType.string,
+      label: "Some Field",
+      default: "blank",
+      validators: [],
+      order: 4
+    },
+    {
+      controlId: 7,
+      type: formControlType.number,
+      label: "Age",
+      default: "minLength", // whatever minLength is set to  or zero
+      validators: ["required", "min(1)", "max(100)"],
+      order: 7
+    },
+    {
+      controlId: 8,
+      type: formControlType.boolean,
+      label: "Is Active",
+      default: undefined,
+      validators: [],
+      order: 8
+    },
+    {
+      groupId: 5,
+      name: 'Address',
+      controls: [
+        {
+          controlId: 1,
+          type: formControlType.string,
+          label: "Address 1",
+          default: '',
+          validators: ["required", "max(25)"],
+          order: 1
+        },
+        {
+          controlId: 2,
+          type: formControlType.string,
+          label: "Postal Code",
+          default: '',
+          validators: ["required", "max(12)"],
+          order: 2
+        }
+      ],
+      order: 6
+    },
+    {
+      groupId: 2,
+      name: 'Group 2',
+      controls: [
+        {
+          controlId: 2,
+          type: formControlType.string,
+          label: "Postal Code",
+          default: '',
+          validators: ["required", "max(25)"],
+          order: 1
+        }
+      ],
+      order: 6
+    }
+  ]
 };
